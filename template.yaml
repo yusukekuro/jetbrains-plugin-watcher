@@ -22,10 +22,11 @@ Resources:
       CodeUri: handler/
       Handler: app.lambdaHandler
       Events:
-        MySchedule:
+        DailyWatcherSchedule:
           Type: Schedule
           Properties:
-            Schedule: cron(0 0 1 * ? *)  # Invoke every day at 9AM JST
+            #            Schedule: cron(0 0 1 * ? *)  # Invoke every day at 9AM JST
+            Schedule: rate(5 minutes) # For debug
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -40,9 +41,11 @@ Resources:
     Properties:
       Name: lineAccessToken
       Description: Secret for LINE Access Token
+      SecretString: "dummy-value"
 
   LineUserIdSecret:
     Type: AWS::SecretsManager::Secret
     Properties:
       Name: lineUserId
       Description: Secret for LINE User ID
+      SecretString: "dummy-value"
