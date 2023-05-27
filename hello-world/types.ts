@@ -1,6 +1,6 @@
 export type Plugin = {
-    $attrs: {
-        date: string;
-        downloads: number;
-    };
+    version: string;
+    rating: number;
+    '@_date': number;
+    '@_downloads': number;
 };

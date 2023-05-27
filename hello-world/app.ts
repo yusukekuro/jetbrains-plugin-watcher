@@ -8,15 +8,16 @@ const fetchLatestPluginDownloads = async (): Promise<number> => {
     const jetBrainsUrl = 'https://plugins.jetbrains.com/plugins/list?pluginId=19099';
 
     const jetBrainsResponse = await axios.get(jetBrainsUrl);
-    const xmlParser = new XMLParser();
+    const xmlParser = new XMLParser({ ignoreAttributes: false });
     const jsonObj = xmlParser.parse(jetBrainsResponse.data);
-    const plugins: Plugin[] = jsonObj['plugin-repository'].category[0]['idea-plugin'];
+    console.log('debug: ' + JSON.stringify(jsonObj));
+    const plugins: Plugin[] = jsonObj['plugin-repository'].category['idea-plugin'];
 
     const latestPlugin = plugins.reduce((prev: Plugin, current: Plugin) => {
-        return prev.$attrs.date > current.$attrs.date ? prev : current;
+        return prev['@_date'] > current['@_date'] ? prev : current;
     });
 
-    return latestPlugin.$attrs.downloads;
+    return latestPlugin['@_downloads'];
 };
 
 const sendLineMessage = async (message: string) => {
@@ -44,7 +45,7 @@ const sendLineMessage = async (message: string) => {
     return lineResponse.data;
 };
 
-export const handler = async (event: ScheduledEvent, context: Context) => {
+export const lambdaHandler = async (event: ScheduledEvent, context: Context) => {
     try {
         const latestDownloads = await fetchLatestPluginDownloads();
         console.log(`Latest downloads: ${latestDownloads}`);
