@@ -22,8 +22,8 @@ const fetchLatestPluginDownloads = async (): Promise<number> => {
 
 const sendLineMessage = async (message: string) => {
     const lineUrl = 'https://api.line.me/v2/bot/message/push';
-    const lineAccessToken = 'Your LINE Access Token'; // Replace with your LINE access token
-    const lineUserId = 'your_line_user_id';
+    const lineAccessToken = process.env.LINE_ACCESS_TOKEN;
+    const lineUserId = process.env.LINE_USER_ID;
 
     const headers = {
         'Content-Type': 'application/json',

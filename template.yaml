@@ -1,33 +1,31 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: >
-  jetbrains-plugin-downloads-watcher
 
-  Sample SAM Template for jetbrains-plugin-downloads-watcher
-
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
+    Runtime: nodejs18.x
+    Architectures:
+      - arm64
     Timeout: 3
-
     Tracing: Active
+    Environment:
+      Variables:
+        LINE_ACCESS_TOKEN: '{{resolve:secretsmanager:lineAccessToken:SecretString}}'
+        LINE_USER_ID: '{{resolve:secretsmanager:lineUserId:SecretString}}'
   Api:
     TracingEnabled: true
+
 Resources:
   HelloWorldFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: hello-world/
       Handler: app.lambdaHandler
-      Runtime: nodejs18.x
-      Architectures:
-      - x86_64
       Events:
-        HelloWorld:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+        MySchedule:
+          Type: Schedule
           Properties:
-            Path: /hello
-            Method: get
+            Schedule: cron(0 0 1 * ? *)  # Invoke every day at 9AM JST
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -35,31 +33,16 @@ Resources:
         Target: es2020
         Sourcemap: true
         EntryPoints:
-        - app.ts
+          - app.ts
 
-  ApplicationResourceGroup:
-    Type: AWS::ResourceGroups::Group
+  LineAccessTokenSecret:
+    Type: AWS::SecretsManager::Secret
     Properties:
-      Name:
-        Fn::Sub: ApplicationInsights-SAM-${AWS::StackName}
-      ResourceQuery:
-        Type: CLOUDFORMATION_STACK_1_0
-  ApplicationInsightsMonitoring:
-    Type: AWS::ApplicationInsights::Application
+      Name: lineAccessToken
+      Description: Secret for LINE Access Token
+
+  LineUserIdSecret:
+    Type: AWS::SecretsManager::Secret
     Properties:
-      ResourceGroupName:
-        Ref: ApplicationResourceGroup
-      AutoConfigurationEnabled: 'true'
-Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: API Gateway endpoint URL for Prod stage for Hello World function
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: Hello World Lambda Function ARN
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: Implicit IAM Role created for Hello World function
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+      Name: lineUserId
+      Description: Secret for LINE User ID
