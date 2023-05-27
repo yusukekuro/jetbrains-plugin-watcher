@@ -25,8 +25,8 @@ Resources:
         DailyWatcherSchedule:
           Type: Schedule
           Properties:
-            #            Schedule: cron(0 0 1 * ? *)  # Invoke every day at 9AM JST
-            Schedule: rate(5 minutes) # For debug
+            # Schedule: rate(5 minutes) # For debug
+            Schedule: cron(0 0 1 * ? *)  # Invoke every day at 9AM JST
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
