@@ -22,6 +22,7 @@ const fetchLatestPluginDownloads = async (): Promise<number> => {
 const sendLineMessage = async (message: string) => {
     const lineUrl = 'https://api.line.me/v2/bot/message/push';
     const lineAccessToken = 'Your LINE Access Token'; // Replace with your LINE access token
+    const lineUserId = 'your_line_user_id';
 
     const headers = {
         'Content-Type': 'application/json',
@@ -29,7 +30,7 @@ const sendLineMessage = async (message: string) => {
     };
 
     const data = {
-        to: 'Your LINE User ID', // Replace with your LINE User ID
+        to: lineUserId,
         messages: [
             {
                 type: 'text',
