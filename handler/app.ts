@@ -9,9 +9,9 @@ const fetchLatestPluginDownloads = async (): Promise<number> => {
 
     const jetBrainsResponse = await axios.get(jetBrainsUrl);
     const xmlParser = new XMLParser({ ignoreAttributes: false });
-    const jsonObj = xmlParser.parse(jetBrainsResponse.data);
-    console.log('debug: ' + JSON.stringify(jsonObj));
-    const plugins: Plugin[] = jsonObj['plugin-repository'].category['idea-plugin'];
+    const xmlJson = xmlParser.parse(jetBrainsResponse.data);
+    console.log(`DEBUG xmlJson: ${JSON.stringify(xmlJson)}`);
+    const plugins: Plugin[] = xmlJson['plugin-repository'].category['idea-plugin'];
 
     const latestPlugin = plugins.reduce((prev: Plugin, current: Plugin) => {
         return prev['@_date'] > current['@_date'] ? prev : current;
@@ -41,18 +41,16 @@ const sendLineMessage = async (message: string) => {
     };
 
     const lineResponse = await axios.post(lineUrl, data, { headers });
-
-    return lineResponse.data;
+    console.log(`DEBUG lineResponse.data: ${JSON.stringify(lineResponse.data)}`);
 };
 
 export const lambdaHandler = async (event: ScheduledEvent, context: Context) => {
-    console.log(`event: ${JSON.stringify(event)}`);
-    console.log(`context: ${JSON.stringify(context)}`);
+    console.log(`DEBUG event: ${JSON.stringify(event)}`);
+    console.log(`DEBUG context: ${JSON.stringify(context)}`);
     try {
         const latestDownloads = await fetchLatestPluginDownloads();
-        console.log(`Latest downloads: ${latestDownloads}`);
-
         const message = `Latest downloads: ${latestDownloads}`;
+        console.log(`DEBUG message: ${message}`);
         await sendLineMessage(message);
     } catch (error) {
         console.error(error);
