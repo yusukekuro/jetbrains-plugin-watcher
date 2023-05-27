@@ -1,7 +1,7 @@
 {
-  "name": "hello_world",
+  "name": "jetbrains-plugin-downloads-watcher",
   "version": "1.0.0",
-  "description": "hello world sample for NodeJS",
+  "description": "Fetch jetbrains plugin detail and send report to LINE",
   "main": "app.js",
   "repository": "https://github.com/awslabs/aws-sam-cli/tree/develop/samcli/local/init/templates/cookiecutter-aws-sam-hello-nodejs",
   "author": "SAM CLI",

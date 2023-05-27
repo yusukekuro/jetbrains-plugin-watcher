@@ -46,6 +46,8 @@ const sendLineMessage = async (message: string) => {
 };
 
 export const lambdaHandler = async (event: ScheduledEvent, context: Context) => {
+    console.log(`event: ${JSON.stringify(event)}`);
+    console.log(`context: ${JSON.stringify(context)}`);
     try {
         const latestDownloads = await fetchLatestPluginDownloads();
         console.log(`Latest downloads: ${latestDownloads}`);

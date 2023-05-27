@@ -16,10 +16,10 @@ Globals:
     TracingEnabled: true
 
 Resources:
-  HelloWorldFunction:
+  WatcherFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: hello-world/
+      CodeUri: handler/
       Handler: app.lambdaHandler
       Events:
         MySchedule:
