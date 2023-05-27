@@ -1,30 +1,56 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import { ScheduledEvent, Context } from 'aws-lambda';
+import axios from 'axios';
+import { XMLParser } from 'fast-xml-parser';
 
-/**
- *
- * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
- * @param {Object} event - API Gateway Lambda Proxy Input Format
- *
- * Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
- * @returns {Object} object - API Gateway Lambda Proxy Output Format
- *
- */
+import { Plugin } from './types'; // import the type from types.ts
 
-export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+const fetchLatestPluginDownloads = async (): Promise<number> => {
+    const jetBrainsUrl = 'https://plugins.jetbrains.com/plugins/list?pluginId=19099';
+
+    const jetBrainsResponse = await axios.get(jetBrainsUrl);
+    const xmlParser = new XMLParser();
+    const jsonObj = xmlParser.parse(jetBrainsResponse.data);
+    const plugins: Plugin[] = jsonObj['plugin-repository'].category[0]['idea-plugin'];
+
+    const latestPlugin = plugins.reduce((prev: Plugin, current: Plugin) => {
+        return prev.$attrs.date > current.$attrs.date ? prev : current;
+    });
+
+    return latestPlugin.$attrs.downloads;
+};
+
+const sendLineMessage = async (message: string) => {
+    const lineUrl = 'https://api.line.me/v2/bot/message/push';
+    const lineAccessToken = 'Your LINE Access Token'; // Replace with your LINE access token
+
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${lineAccessToken}`,
+    };
+
+    const data = {
+        to: 'Your LINE User ID', // Replace with your LINE User ID
+        messages: [
+            {
+                type: 'text',
+                text: message,
+            },
+        ],
+    };
+
+    const lineResponse = await axios.post(lineUrl, data, { headers });
+
+    return lineResponse.data;
+};
+
+export const handler = async (event: ScheduledEvent, context: Context) => {
     try {
-        return {
-            statusCode: 200,
-            body: JSON.stringify({
-                message: 'hello world',
-            }),
-        };
-    } catch (err) {
-        console.log(err);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({
-                message: 'some error happened',
-            }),
-        };
+        const latestDownloads = await fetchLatestPluginDownloads();
+        console.log(`Latest downloads: ${latestDownloads}`);
+
+        const message = `Latest downloads: ${latestDownloads}`;
+        await sendLineMessage(message);
+    } catch (error) {
+        console.error(error);
     }
 };
