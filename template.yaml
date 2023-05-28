@@ -22,11 +22,14 @@ Resources:
       CodeUri: handler/
       Handler: app.lambdaHandler
       Events:
-        DailyWatcherSchedule:
+        Every5MinutesSchedule:
           Type: Schedule
           Properties:
-            # Schedule: rate(5 minutes) # For debug
-            Schedule: cron(0 1 * * ? *)  # Invoke every day at 10AM JST
+            Schedule: rate(5 minutes)
+      #            Schedule: cron(0 1 * * ? *)  # Invoke every day at 10AM JST
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: WatcherMessage
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -49,3 +52,15 @@ Resources:
       Name: lineUserId
       Description: Secret for LINE User ID
       SecretString: "dummy-value"
+
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: WatcherMessage
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
