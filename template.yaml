@@ -26,7 +26,7 @@ Resources:
           Type: Schedule
           Properties:
             # Schedule: rate(5 minutes) # For debug
-            Schedule: cron(0 0 1 * ? *)  # Invoke every day at 9AM JST
+            Schedule: cron(0 1 * * ? *)  # Invoke every day at 10AM JST
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
