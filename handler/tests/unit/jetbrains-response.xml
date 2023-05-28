@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<plugin-repository>
+    <ff>"foo"</ff>
+    <category name="Code Tools">
+        <idea-plugin downloads="100000" size="13813" date="1670737768000" updatedDate="1670737768000" url="">
+            <name>foo</name>
+            <id>foo</id>
+            <description>foo</description>
+            <version>1.1.0</version>
+            <vendor email="" url="">name</vendor>
+            <rating>5</rating>
+            <change-notes></change-notes>
+            <idea-version min="n/a" max="n/a" since-build="211.0"/>
+        </idea-plugin>
+        <idea-plugin downloads="99999" size="12059" date="1659263722000" updatedDate="1659263722000" url="">
+            <name>foo</name>
+            <id>foo</id>
+            <description>foo</description>
+            <version>1.0.0</version>
+            <vendor email="" url="">foo</vendor>
+            <rating>4.9</rating>
+            <change-notes>foo</change-notes>
+            <idea-version min="n/a" max="n/a" since-build="211.0" until-build="222.*"/>
+        </idea-plugin>
+        <idea-plugin downloads="1433" size="12131" date="1651651187000" updatedDate="1651651187000" url="">
+            <name>foo</name>
+            <id>foo</id>
+            <description>foo</description>
+            <version>0.0.2</version>
+            <vendor email="" url="">foo</vendor>
+            <rating>3.1</rating>
+            <change-notes>foo</change-notes>
+            <idea-version min="n/a" max="n/a" since-build="211.0" until-build="221.*"/>
+        </idea-plugin>
+    </category>
+</plugin-repository>
