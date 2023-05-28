@@ -5,7 +5,7 @@ import { Plugin } from './types'; // import the type from types.ts
 import AWS from 'aws-sdk';
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
-const tableName = 'WatcherMessage';
+const TABLE_NAME = 'WatcherMessage';
 
 const fetchLatestPlugin = async (): Promise<Plugin> => {
     const jetBrainsUrl = 'https://plugins.jetbrains.com/plugins/list?pluginId=19099';
@@ -23,7 +23,7 @@ const fetchLatestPlugin = async (): Promise<Plugin> => {
 
 const getStoredMessage = async (): Promise<any> => {
     const params: AWS.DynamoDB.DocumentClient.GetItemInput = {
-        TableName: tableName,
+        TableName: TABLE_NAME,
         Key: { id: 'previousMessage' },
     };
 
@@ -33,7 +33,7 @@ const getStoredMessage = async (): Promise<any> => {
 
 const storeMessage = async (message: string) => {
     const params: AWS.DynamoDB.DocumentClient.PutItemInput = {
-        TableName: tableName,
+        TableName: TABLE_NAME,
         Item: {
             id: 'previousMessage',
             message,
@@ -41,6 +41,10 @@ const storeMessage = async (message: string) => {
     };
 
     await dynamodb.put(params).promise();
+};
+
+const isMessageChanged = (previousMessage: string, message: string): boolean => {
+    return !previousMessage || message !== previousMessage;
 };
 
 const is10AMNow = (): boolean => {
@@ -79,10 +83,6 @@ const sendLineMessage = async (message: string) => {
 export const lambdaHandler = async (event: ScheduledEvent, context: Context) => {
     console.log(`DEBUG event: ${JSON.stringify(event)}`);
     console.log(`DEBUG context: ${JSON.stringify(context)}`);
-
-    function isMessageChanged(previousMessage: string, message: string) {
-        return !previousMessage || message !== previousMessage;
-    }
 
     try {
         const latestPlugin = await fetchLatestPlugin();
