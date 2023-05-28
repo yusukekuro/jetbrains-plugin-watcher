@@ -1,10 +1,9 @@
 import { ScheduledEvent, Context } from 'aws-lambda';
 import axios from 'axios';
 import { XMLParser } from 'fast-xml-parser';
-
 import { Plugin } from './types'; // import the type from types.ts
 
-const fetchLatestPluginDownloads = async (): Promise<number> => {
+const fetchLatestPlugin = async (): Promise<Plugin> => {
     const jetBrainsUrl = 'https://plugins.jetbrains.com/plugins/list?pluginId=19099';
 
     const jetBrainsResponse = await axios.get(jetBrainsUrl);
@@ -13,11 +12,9 @@ const fetchLatestPluginDownloads = async (): Promise<number> => {
     console.log(`DEBUG xmlJson: ${JSON.stringify(xmlJson)}`);
     const plugins: Plugin[] = xmlJson['plugin-repository'].category['idea-plugin'];
 
-    const latestPlugin = plugins.reduce((prev: Plugin, current: Plugin) => {
+    return plugins.reduce((prev: Plugin, current: Plugin) => {
         return prev['@_date'] > current['@_date'] ? prev : current;
     });
-
-    return latestPlugin['@_downloads'];
 };
 
 const sendLineMessage = async (message: string) => {
@@ -48,8 +45,8 @@ export const lambdaHandler = async (event: ScheduledEvent, context: Context) => 
     console.log(`DEBUG event: ${JSON.stringify(event)}`);
     console.log(`DEBUG context: ${JSON.stringify(context)}`);
     try {
-        const latestDownloads = await fetchLatestPluginDownloads();
-        const message = `Latest downloads: ${latestDownloads}`;
+        const latestPlugin = await fetchLatestPlugin();
+        const message = `Downloads: ${latestPlugin['@_downloads']}, Rating: ${latestPlugin.rating}`;
         console.log(`DEBUG message: ${message}`);
         await sendLineMessage(message);
     } catch (error) {
