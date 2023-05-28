@@ -1,5 +1,5 @@
 {
-  "name": "jetbrains-plugin-downloads-watcher",
+  "name": "jetbrains-plugin-watcher",
   "version": "1.0.0",
   "description": "Fetch jetbrains plugin detail and send report to LINE",
   "main": "app.js",
