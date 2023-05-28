@@ -53,12 +53,16 @@ const isMessageChanged = (previousMessage: string, message: string): boolean => 
 };
 
 const is10AMNow = (): boolean => {
-    const currentTime = new Date();
-    const currentHour = currentTime.getHours();
-    const currentMinute = currentTime.getMinutes();
+    const defaultTimezoneDate = new Date();
+    // timezoneOffset is 0 in UTC server (lambda runtime). -540 in JST server (local machine).
+    const jstDate = new Date(
+        defaultTimezoneDate.getTime() + (540 + defaultTimezoneDate.getTimezoneOffset()) * 60 * 1000,
+    );
+    const jstHours = jstDate.getHours();
+    const jstMinutes = jstDate.getMinutes();
 
     // Check if the current time is between 10:00 AM and 10:05 AM JST
-    return currentHour === 10 && currentMinute >= 0 && currentMinute <= 5;
+    return jstHours === 10 && jstMinutes >= 0 && jstMinutes < 5;
 };
 
 const sendLineMessage = async (message: string) => {
