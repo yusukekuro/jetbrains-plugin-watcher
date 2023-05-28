@@ -5,9 +5,7 @@ import { Plugin } from './types';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
 
-const dbClient = new DynamoDBClient({
-    endpoint: process.env.ENV === 'local' ? 'http://host.docker.internal:8000' : undefined,
-});
+const dbClient = new DynamoDBClient({});
 const documentClient = DynamoDBDocumentClient.from(dbClient);
 const TABLE_NAME = 'WatcherMessage';
 
