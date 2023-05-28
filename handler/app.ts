@@ -1,11 +1,35 @@
 import { ScheduledEvent, Context } from 'aws-lambda';
 import axios from 'axios';
 import { XMLParser } from 'fast-xml-parser';
-import { Plugin } from './types'; // import the type from types.ts
-import AWS from 'aws-sdk';
+import { Plugin } from './types';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
 
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+const dbClient = new DynamoDBClient({
+    endpoint: process.env.ENV === 'local' ? 'http://host.docker.internal:8000' : undefined,
+});
+const documentClient = DynamoDBDocumentClient.from(dbClient);
 const TABLE_NAME = 'WatcherMessage';
+
+const getStoredMessage = async (): Promise<any> => {
+    const command = new GetCommand({
+        TableName: TABLE_NAME,
+        Key: { id: 'previousMessage' },
+    });
+    const response = await documentClient.send(command);
+    return response.Item;
+};
+
+const storeMessage = async (message: string) => {
+    const command = new PutCommand({
+        TableName: TABLE_NAME,
+        Item: {
+            id: 'previousMessage',
+            message,
+        },
+    });
+    await documentClient.send(command);
+};
 
 const fetchLatestPlugin = async (): Promise<Plugin> => {
     const jetBrainsUrl = 'https://plugins.jetbrains.com/plugins/list?pluginId=19099';
@@ -21,27 +45,10 @@ const fetchLatestPlugin = async (): Promise<Plugin> => {
     });
 };
 
-const getStoredMessage = async (): Promise<any> => {
-    const params: AWS.DynamoDB.DocumentClient.GetItemInput = {
-        TableName: TABLE_NAME,
-        Key: { id: 'previousMessage' },
-    };
-
-    const response = await dynamodb.get(params).promise();
-    return response.Item;
-};
-
-const storeMessage = async (message: string) => {
-    const params: AWS.DynamoDB.DocumentClient.PutItemInput = {
-        TableName: TABLE_NAME,
-        Item: {
-            id: 'previousMessage',
-            message,
-        },
-    };
-
-    await dynamodb.put(params).promise();
-};
+async function buildNewMessage() {
+    const latestPlugin = await fetchLatestPlugin();
+    return `Downloads: ${latestPlugin['@_downloads']}, Rating: ${latestPlugin.rating}`;
+}
 
 const isMessageChanged = (previousMessage: string, message: string): boolean => {
     return !previousMessage || message !== previousMessage;
@@ -85,18 +92,18 @@ export const lambdaHandler = async (event: ScheduledEvent, context: Context) => 
     console.log(`DEBUG context: ${JSON.stringify(context)}`);
 
     try {
-        const latestPlugin = await fetchLatestPlugin();
-        const message = `Downloads: ${latestPlugin['@_downloads']}, Rating: ${latestPlugin.rating}`;
-        console.log(`DEBUG message: ${message}`);
-
         const storedMessage = await getStoredMessage();
+        console.log(`DEBUG storedMessage: ${JSON.stringify(storedMessage)}`);
         const previousMessage = storedMessage ? storedMessage.message : undefined;
 
-        if (isMessageChanged(previousMessage, message) || is10AMNow()) {
-            await sendLineMessage(message);
+        const newMessage = await buildNewMessage();
+        console.log(`DEBUG newMessage: ${newMessage}`);
+
+        if (isMessageChanged(previousMessage, newMessage) || is10AMNow()) {
+            await sendLineMessage(newMessage);
         }
-        if (isMessageChanged(previousMessage, message)) {
-            await storeMessage(message);
+        if (isMessageChanged(previousMessage, newMessage)) {
+            await storeMessage(newMessage);
         }
     } catch (error) {
         console.error(error);
