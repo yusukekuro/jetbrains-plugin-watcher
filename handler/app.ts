@@ -86,10 +86,10 @@ const sendLineMessage = async (message: string) => {
 };
 
 export const lambdaHandler = async (event: ScheduledEvent, context: Context) => {
-    console.log(`DEBUG event: ${JSON.stringify(event)}`);
-    console.log(`DEBUG context: ${JSON.stringify(context)}`);
-
     try {
+        console.log(`DEBUG event: ${JSON.stringify(event)}`);
+        console.log(`DEBUG context: ${JSON.stringify(context)}`);
+
         const storedMessage = await getStoredMessage();
         console.log(`DEBUG storedMessage: ${JSON.stringify(storedMessage)}`);
         const previousMessage = storedMessage ? storedMessage.message : undefined;
@@ -103,7 +103,11 @@ export const lambdaHandler = async (event: ScheduledEvent, context: Context) => 
         if (isMessageChanged(previousMessage, newMessage)) {
             await storeMessage(newMessage);
         }
-    } catch (error) {
-        console.error(error);
+    } catch (e) {
+        console.error(`Caught error ${e}`);
+        if (e instanceof Error) {
+            console.error(e.stack);
+        }
+        throw e;
     }
 };
