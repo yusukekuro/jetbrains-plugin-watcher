@@ -52,19 +52,6 @@ const isMessageChanged = (previousMessage: string, message: string): boolean => 
     return !previousMessage || message !== previousMessage;
 };
 
-const is10AMNow = (): boolean => {
-    const defaultTimezoneDate = new Date();
-    // timezoneOffset is 0 in UTC server (lambda runtime). -540 in JST server (local machine).
-    const jstDate = new Date(
-        defaultTimezoneDate.getTime() + (540 + defaultTimezoneDate.getTimezoneOffset()) * 60 * 1000,
-    );
-    const jstHours = jstDate.getHours();
-    const jstMinutes = jstDate.getMinutes();
-
-    // Check if the current time is between 10:00 AM and 10:05 AM JST
-    return jstHours === 10 && jstMinutes >= 0 && jstMinutes < 5;
-};
-
 const sendLineMessage = async (message: string) => {
     const lineUrl = 'https://api.line.me/v2/bot/message/push';
     const lineAccessToken = process.env.LINE_ACCESS_TOKEN;
@@ -101,10 +88,8 @@ export const lambdaHandler = async (event: ScheduledEvent, context: Context) => 
         const newMessage = await buildNewMessage();
         console.log(`DEBUG newMessage: ${newMessage}`);
 
-        if (isMessageChanged(previousMessage, newMessage) || is10AMNow()) {
-            await sendLineMessage(newMessage);
-        }
         if (isMessageChanged(previousMessage, newMessage)) {
+            await sendLineMessage(newMessage);
             await storeMessage(newMessage);
         }
     } catch (e) {

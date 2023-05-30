@@ -6,6 +6,7 @@ This SAM application uses several AWS resources. These resources are defined in 
   - Triggered by EventBridge
   - Calls jetbrains API to fetch the plugin info. Stores the summary in DynamoDB. When the summary is changed, push the summary to your LINE account.
   - Even if the summary is not changed, it still sends the summary to LINE every day at 10AM JST.
+    - This 10AM check has been removed. See the commit "Remove is10AMNow".
 - DynamoDB (WatcherMessage)
   - Stores a key "previousMessage"
 - EventBridge (WatcherFunctionEvery5MinutesSchedule)
