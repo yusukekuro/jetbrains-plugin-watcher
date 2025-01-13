@@ -22,10 +22,10 @@ Resources:
       CodeUri: handler/
       Handler: app.lambdaHandler
       Events:
-        Every5MinutesSchedule:
+        Every1HourSchedule:
           Type: Schedule
           Properties:
-            Schedule: rate(5 minutes)
+            Schedule: rate(1 hour)
       #            Schedule: cron(0 1 * * ? *)  # Invoke every day at 10AM JST
       Policies:
         - DynamoDBCrudPolicy:
