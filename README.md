@@ -19,7 +19,9 @@
 - **削除でつまずいた点**: スタックを削除すると Secrets Manager のシークレットが Lambda より先に消える。すると Lambda の削除時に `{{resolve:secretsmanager:...}}` を解決できず、`DELETE_FAILED` になった。
   Lambda を `aws lambda delete-function` で直接消してから、`aws cloudformation delete-stack --retain-resources WatcherFunction` で削除し直して片付けた。
   同じ構成の `manga-watcher`・`actress-watcher` を消すときも同じことが起きるはず。
-- **復活させるなら**: `sam build && sam deploy` でもう一度作れる。ただしテンプレートが作るシークレットの値はダミー（`dummy-value`）。Lambda の環境変数にはデプロイした時点の値が入るので、シークレットを本物の値に書き換えてから、もう一度デプロイする必要がある。
+- **復活させるなら**: `sam build && sam deploy` でもう一度作れる。ただしテンプレートのシークレットの値はダミー（`dummy-value`）で、Lambda の環境変数にはデプロイした時点の値が入る。
+  あとからシークレットだけ書き換えても、テンプレートが変わらないので再デプロイは「変更なし」になり、Lambda には反映されない。
+  `sam build` の成果物（`.aws-sam/build/template.yaml`。git 管理外）の `SecretString` だけを本物の値に差し替えてから `sam deploy` する。
 
 This SAM application uses several AWS resources. These resources are defined in the `template.yaml` file in this project.
 
@@ -30,8 +32,8 @@ This SAM application uses several AWS resources. These resources are defined in 
     - This 10AM check has been removed. See the commit "Remove is10AMNow".
 - DynamoDB (WatcherMessage)
   - Stores a key "previousMessage"
-- EventBridge (WatcherFunctionEvery5MinutesSchedule)
-  - Every 5 minutes, triggers the lambda function
+- EventBridge (WatcherFunctionEvery1HourSchedule)
+  - Every 1 hour, triggers the lambda function (it was every 5 minutes until 2025-01-13)
 - SecretsManager
   - Stores LINE Access Token and LINE User ID
 
