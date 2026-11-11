@@ -1,5 +1,26 @@
 # jetbrains-plugin-watcher
 
+> [!WARNING]
+> **このプロジェクトは 2026-11-11 に廃止しました。** 通知は止まっていて、AWS 上の資源もすべて削除済みです。
+> このリポジトリは記録として残しているだけです。以下の説明は稼働していた当時のものです。
+
+## 廃止の記録（2026-11-11）
+
+- **理由**: JetBrains プラグイン（ID 19099）のダウンロード数・評価の LINE 通知が不要になったため。
+- **廃止時点の状態**: 1 時間ごとに起動していて、エラーもなく正常に動いていた（最終値 `Downloads: 3566, Rating: 3.1`）。ランタイムは Node.js 18（サポート終了済み）のままだった。
+- **削除したもの**（`samconfig.toml` のとおり ap-northeast-1）:
+  - CloudFormation スタック `jetbrains-plugin-watcher` と、その中身（Lambda `WatcherFunction`、EventBridge ルール `rate(1 hour)`、IAM ロール、DynamoDB テーブル `WatcherMessage`、Secrets Manager の `lineAccessToken` / `lineUserId`）
+  - CloudWatch のロググループ `/aws/lambda/jetbrains-plugin-watcher-WatcherFunction-*` と、旧名のときの残骸 `/aws/lambda/jetbrains-plugin-downloads-watcher-WatcherFunction-*`
+  - SAM のデプロイ用 S3 バケット（`aws-sam-cli-managed-default` スタックのもの）の `jetbrains-plugin-watcher/` 配下
+- **残したもの**:
+  - LINE の Messaging API チャネル。`manga-watcher`・`actress-watcher` と共有しているため消していない（アクセストークンも同じ）。このプロジェクト専用の LINE 資源は無い。
+  - 送信済みの LINE メッセージ。
+  - このリポジトリ（GitHub ではアーカイブ済み）。
+- **削除でつまずいた点**: スタックを削除すると Secrets Manager のシークレットが Lambda より先に消える。すると Lambda の削除時に `{{resolve:secretsmanager:...}}` を解決できず、`DELETE_FAILED` になった。
+  Lambda を `aws lambda delete-function` で直接消してから、`aws cloudformation delete-stack --retain-resources WatcherFunction` で削除し直して片付けた。
+  同じ構成の `manga-watcher`・`actress-watcher` を消すときも同じことが起きるはず。
+- **復活させるなら**: `sam build && sam deploy` でもう一度作れる。ただしテンプレートが作るシークレットの値はダミー（`dummy-value`）。Lambda の環境変数にはデプロイした時点の値が入るので、シークレットを本物の値に書き換えてから、もう一度デプロイする必要がある。
+
 This SAM application uses several AWS resources. These resources are defined in the `template.yaml` file in this project.
 
 - Lambda function (WatcherFunction)
